@@ -10,7 +10,8 @@ public class BattleMapController : MonoBehaviour {
     private Vector2Int bounds = new Vector2Int(100, 100);
     private BattleMap battleMap;
 
-    private int viewRange = 5;
+    private int viewRange = 15;
+    private int moveRange = 10;
     // private Vector2Int playerPositon;
     private Actor playerEntity;
 
@@ -42,16 +43,23 @@ public class BattleMapController : MonoBehaviour {
         playerEntity = new Actor(playerPositon);
         playerViews.Add(playerEntity, new HashSet<Vector2Int>());
 
+        Dictionary<Vector2Int, int> moveArea = AvailableMoves.GetAvailableMoves(battleMap, playerPositon, moveRange);
+
         UpdateView(playerEntity);
         gridManager.initVisuals(bounds);
         gridManager.colorAllRenders(Color.black);
         gridManager.paintSquareColor(new List<Vector2Int>(playerViews[playerEntity]), Color.green);
+        foreach(KeyValuePair<Vector2Int,int> thing in moveArea) {
+            Color c = new Color(0, 0, (1f / moveRange) * thing.Value);
+            gridManager.paintSquareColor(new List<Vector2Int>() { thing.Key }, c);
+        }
+        // gridManager.paintSquareColor(moveArea.Keys, Color.blue);
     }
 
     public void Update() {
         Vector2Int updatePositon = Vector2Int.zero;
 
-        if(Input.GetKeyDown(KeyCode.W)) {
+        if (Input.GetKeyDown(KeyCode.W)) {
             updatePositon = Vector2Int.up;
         } else if (Input.GetKeyDown(KeyCode.D)) {
             updatePositon = Vector2Int.right;
@@ -65,10 +73,15 @@ public class BattleMapController : MonoBehaviour {
             playerEntity.Position = playerEntity.Position + updatePositon;
             UpdateView(playerEntity);
             gridManager.colorAllRenders(Color.black);
+            // Dictionary<Vector2Int, int> moveArea = AvailableMoves.GetAvailableMoves(battleMap, playerEntity.Position, moveRange);
 
             Debug.Log(playerEntity.Position);
             gridManager.colorAllRenders(Color.black);
             gridManager.paintSquareColor(new List<Vector2Int>(playerViews[playerEntity]), Color.green);
+            /*foreach (KeyValuePair<Vector2Int, int> thing in moveArea) {
+                Color c = new Color(0, 0, (1f / moveRange) * thing.Value);
+                gridManager.paintSquareColor(new List<Vector2Int>() { thing.Key }, c);
+            }*/
         }
     }
 
@@ -95,7 +108,7 @@ public class BattleMapController : MonoBehaviour {
             playerViews[entityViewing].Remove(tile);
         }
 
-       
+
 
         // add the new tiles
         foreach (Vector2Int tile in inView) {
