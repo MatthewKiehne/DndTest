@@ -1,3 +1,5 @@
+using Antlr4.Runtime;
+using Calculator;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,20 +9,44 @@ public class BattleMapController : MonoBehaviour {
     [SerializeField]
     private GridManager gridManager;
 
+    [SerializeField]
+    private GameObject squarePrefab;
+
     private Vector2Int bounds = new Vector2Int(100, 100);
     private BattleMap battleMap;
 
     private int viewRange = 15;
-    private int moveRange = 10;
-    // private Vector2Int playerPositon;
+    private int moveRange = 5;
     private Actor playerEntity;
 
     Dictionary<Actor, HashSet<Vector2Int>> playerViews = new Dictionary<Actor, HashSet<Vector2Int>>();
-    Dictionary<Vector2Int, SpriteRenderer> entityVisuals = new Dictionary<Vector2Int, SpriteRenderer>();
+    Dictionary<Actor, Dictionary<Vector2Int, int>> playerMoveRange = new Dictionary<Actor, Dictionary<Vector2Int, int>>();
+    private Dictionary<Vector2Int, SpriteRenderer> entityVisuals = new Dictionary<Vector2Int, SpriteRenderer>();
+
+    private Vector2Int lastMousePostion = Vector2Int.zero;
+    private List<Vector2Int> playerPath = new List<Vector2Int>();
+    private List<GameObject> pathGameObjects = new List<GameObject>();
 
 
     // Start is called before the first frame update
     void Start() {
+
+
+        const string exp = "5+2*3";
+        AntlrInputStream inputStream = new AntlrInputStream(exp);
+        CalculatorLexer lexer = new CalculatorLexer(inputStream);
+
+        CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
+        CalculatorParser parser = new CalculatorParser(commonTokenStream);
+
+        CustomVisitor customVisitor = new CustomVisitor();
+        double result = customVisitor.Visit(parser.start());
+
+        Debug.Log(result);
+
+
+
+
         battleMap = new BattleMap(bounds);
 
         List<Vector2Int> walls = new List<Vector2Int>() {
@@ -43,7 +69,8 @@ public class BattleMapController : MonoBehaviour {
         playerEntity = new Actor(playerPositon);
         playerViews.Add(playerEntity, new HashSet<Vector2Int>());
 
-        Dictionary<Vector2Int, int> moveArea = AvailableMoves.GetAvailableMoves(battleMap, playerPositon, moveRange);
+        Dictionary<Vector2Int, int> moveArea = AvailableMoves.GetAvailableMoves(battleMap, playerPositon, moveRange * 2);
+        playerMoveRange.Add(playerEntity, moveArea);
 
         UpdateView(playerEntity);
         gridManager.initVisuals(bounds);
@@ -53,35 +80,68 @@ public class BattleMapController : MonoBehaviour {
             Color c = new Color(0, 0, (1f / moveRange) * thing.Value);
             gridManager.paintSquareColor(new List<Vector2Int>() { thing.Key }, c);
         }
-        // gridManager.paintSquareColor(moveArea.Keys, Color.blue);
+
+        List<Vector2Int> path = AStar.getPath(battleMap, playerEntity.Position, playerEntity.Position + new Vector2Int(-30,0), 1, playerViews[playerEntity]);
+
+        if(path != null) {
+            // a path does not exist
+            foreach (Vector2Int step in path) {
+                GameObject go = GameObject.Instantiate(squarePrefab);
+                go.transform.position = (Vector2)step;
+                go.GetComponent<SpriteRenderer>().sortingOrder = 10;
+                pathGameObjects.Add(go);
+            }
+        }
     }
 
     public void Update() {
-        Vector2Int updatePositon = Vector2Int.zero;
 
-        if (Input.GetKeyDown(KeyCode.W)) {
-            updatePositon = Vector2Int.up;
-        } else if (Input.GetKeyDown(KeyCode.D)) {
-            updatePositon = Vector2Int.right;
-        } else if (Input.GetKeyDown(KeyCode.S)) {
-            updatePositon = Vector2Int.down;
-        } else if (Input.GetKeyDown(KeyCode.A)) {
-            updatePositon = Vector2Int.left;
+        Vector3 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2Int roundedCameraPosition = new Vector2Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
+        
+        if(roundedCameraPosition != lastMousePostion && playerMoveRange[playerEntity].ContainsKey(roundedCameraPosition) && battleMap.PositionInBounds(roundedCameraPosition)) {
+
+            playerPath = AStar.getPath(battleMap, playerEntity.Position, roundedCameraPosition, 1, playerViews[playerEntity]);
+            if(playerPath != null) {
+                foreach (GameObject go in pathGameObjects) {
+                    Destroy(go);
+                }
+                pathGameObjects.Clear();
+
+                foreach (Vector2Int step in playerPath) {
+                    GameObject go = GameObject.Instantiate(squarePrefab);
+                    go.transform.position = (Vector2)step;
+                    go.GetComponent<SpriteRenderer>().sortingOrder = 10;
+                    pathGameObjects.Add(go);
+                }
+            }
+
+            lastMousePostion = roundedCameraPosition;
+        }
+
+        Vector2Int updatePositon = Vector2Int.zero;
+        if (Input.GetKeyDown(KeyCode.Mouse0) && playerViews[playerEntity].Contains(roundedCameraPosition) && battleMap.PositionInBounds(roundedCameraPosition)) {
+            updatePositon = roundedCameraPosition;
+            playerEntity.Position = updatePositon;
         }
 
         if (updatePositon != Vector2Int.zero) {
-            playerEntity.Position = playerEntity.Position + updatePositon;
             UpdateView(playerEntity);
             gridManager.colorAllRenders(Color.black);
-            // Dictionary<Vector2Int, int> moveArea = AvailableMoves.GetAvailableMoves(battleMap, playerEntity.Position, moveRange);
-
-            Debug.Log(playerEntity.Position);
+            playerMoveRange[playerEntity].Clear();
+            playerMoveRange[playerEntity] = AvailableMoves.GetAvailableMoves(battleMap, playerEntity.Position, moveRange * 2);
+            
             gridManager.colorAllRenders(Color.black);
-            gridManager.paintSquareColor(new List<Vector2Int>(playerViews[playerEntity]), Color.green);
-            /*foreach (KeyValuePair<Vector2Int, int> thing in moveArea) {
-                Color c = new Color(0, 0, (1f / moveRange) * thing.Value);
-                gridManager.paintSquareColor(new List<Vector2Int>() { thing.Key }, c);
-            }*/
+            gridManager.paintSquareColor(new List<Vector2Int>(playerViews[playerEntity]), Color.cyan);
+            foreach (KeyValuePair<Vector2Int, int> moveTile in playerMoveRange[playerEntity]) {
+                if (playerViews[playerEntity].Contains(moveTile.Key)) {
+                    Color paintColor = Color.green;
+                    if(moveTile.Value > moveRange) {
+                        paintColor = Color.yellow;
+                    } 
+                    gridManager.paintSquareColor(new List<Vector2Int>() { moveTile.Key }, paintColor);
+                }
+            }
         }
     }
 
@@ -107,8 +167,6 @@ public class BattleMapController : MonoBehaviour {
 
             playerViews[entityViewing].Remove(tile);
         }
-
-
 
         // add the new tiles
         foreach (Vector2Int tile in inView) {

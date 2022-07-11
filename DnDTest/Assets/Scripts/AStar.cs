@@ -20,7 +20,6 @@ public static class AStar {
 
     private static HashSet<Vector2Int> _visibleTiles;
 
-
     public static List<Vector2Int> getPath(BattleMap battleMap, Vector2Int startPoint, Vector2Int endPoint, int characterSize, HashSet<Vector2Int> visibleTiles) {
         possibleSquares.Clear();
         usedSquares.Clear();
@@ -61,7 +60,7 @@ public static class AStar {
 
     private static bool updateMap(Vector2Int endPosition) {
         Vector2Int foundSquare = findNextPosition();
-        if (foundSquare.Equals(endPosition)) {
+        if (foundSquare.Equals(endPosition) || foundSquare == -Vector2Int.one) {
             return false;
         }
 
@@ -71,7 +70,7 @@ public static class AStar {
     }
 
     private static Vector2Int findNextPosition() {
-        Vector2Int result = Vector2Int.zero;
+        Vector2Int result = -Vector2Int.one;
         AStarSquare resultSquare = null;
 
         foreach (KeyValuePair<Vector2Int, AStarSquare> entry in possibleSquares) {
