@@ -2,41 +2,73 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class EntityFactory
-{
-    public static readonly string ExtensionName = "Test";
+public static class EntityFactory {
+    public static class Extension {
+        public static readonly string Name = "Test";
+    }
 
-    public static readonly string GroupVisability = "Visability";
-    public static readonly string GroupMovement = "Movement";
+    public static class Group {
+        public static readonly string Visability = "Visability";
+        public static readonly string Movement = "Movement";
+        public static readonly string Postion = "Position";
+    }
 
-    public static readonly string SourceIntrinsic = "Intrinsic";
+    public static class Attribute {
+        public static class Visability {
+            public static readonly string Block = "VisabilityBlock";
+            public static readonly string Token = "VisabilityToken";
+        }
 
-    public static readonly string AttributeVisabilityBlock = "VisabilityBlock";
-    public static readonly string AttributeVisabilityToken = "VisabilityToken";
-    public static readonly string AttributeMovementImpassible = "Impassible";
+        public static class Movement {
+            public static readonly string Impassible = "Impassible";
+        }
 
-    public static readonly string ExperationNever = "Never";
+        public static class Position {
+            public static readonly string X = "X";
+            public static readonly string Y = "Y";
+        }
+    }
+
+    public static class Source {
+        public static readonly string Intrinsic = "Intrinsic";
+    }
+
+    public static class Experation {
+        public static readonly string Never = "Never";
+    }
 
     public static Actor GenerateWall(Vector2Int position) {
         Feature blockVisability = new Feature("Block Visability",
-            GenerateSourceName(ExtensionName, GroupVisability, SourceIntrinsic),
-            GenerateTargetAttributeName(ExtensionName, GroupVisability, AttributeVisabilityBlock));
-        blockVisability.Expiration = ExperationNever;
+            GenerateSourceName(Extension.Name, Group.Visability, Source.Intrinsic),
+            GenerateTargetAttributeName(Extension.Name, Group.Visability, Attribute.Visability.Block));
+        blockVisability.Expiration = Experation.Never;
 
         Feature blockMovement = new Feature("Block Movement",
-            GenerateSourceName(ExtensionName, GroupMovement, SourceIntrinsic),
-            GenerateTargetAttributeName(ExtensionName, GroupMovement, AttributeMovementImpassible));
-        blockMovement.Expiration = ExperationNever;
+            GenerateSourceName(Extension.Name, Group.Movement, Source.Intrinsic),
+            GenerateTargetAttributeName(Extension.Name, Group.Movement, Attribute.Movement.Impassible));
+        blockMovement.Expiration = Experation.Never;
 
         Feature token = new Feature("Token",
-            GenerateSourceName(ExtensionName, GroupVisability, SourceIntrinsic),
-            GenerateTargetAttributeName(ExtensionName, GroupVisability, AttributeVisabilityToken));
+            GenerateSourceName(Extension.Name, Group.Visability, Source.Intrinsic),
+            GenerateTargetAttributeName(Extension.Name, Group.Visability, Attribute.Visability.Token));
         token.StringValue = "Wall";
 
-        Actor entity = new Actor(position);
-        entity.Conditions.Add(blockVisability);
-        entity.Conditions.Add(blockMovement);
-        entity.Conditions.Add(token);
+        Feature positionX = new Feature("X",
+            GenerateSourceName(Extension.Name, Group.Postion, Source.Intrinsic),
+            GenerateTargetAttributeName(Extension.Name, Group.Postion, Attribute.Position.X));
+        positionX.NumericValue = position.x;
+
+        Feature positionY = new Feature("Y",
+            GenerateSourceName(Extension.Name, Group.Postion, Source.Intrinsic),
+            GenerateTargetAttributeName(Extension.Name, Group.Postion, Attribute.Position.Y));
+        positionY.NumericValue = position.y;
+
+        Actor entity = new Actor();
+        entity.Features.Add(blockVisability);
+        entity.Features.Add(blockMovement);
+        entity.Features.Add(token);
+        entity.Features.Add(positionX);
+        entity.Features.Add(positionY);
 
         return entity;
     }

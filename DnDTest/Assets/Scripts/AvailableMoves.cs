@@ -26,7 +26,7 @@ public static class AvailableMoves {
         }
 
         // return if the block can not be moved through
-        string blockMovementAttribute = EntityFactory.GenerateTargetAttributeName(EntityFactory.ExtensionName, EntityFactory.GroupMovement, EntityFactory.AttributeMovementImpassible);
+        string blockMovementAttribute = EntityFactory.GenerateTargetAttributeName(EntityFactory.Extension.Name, EntityFactory.Group.Movement, EntityFactory.Attribute.Movement.Impassible);
         if (battleMap.DoesEntityWithAttributeExistAtPosition(currentPosition, blockMovementAttribute)) {
             return;
         }

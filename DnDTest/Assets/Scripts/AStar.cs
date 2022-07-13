@@ -16,7 +16,7 @@ public static class AStar {
 
     private static BattleMap _battleMap;
 
-    private static readonly string blockMovementAttribute = EntityFactory.GenerateTargetAttributeName(EntityFactory.ExtensionName, EntityFactory.GroupMovement, EntityFactory.AttributeMovementImpassible);
+    private static readonly string blockMovementAttribute = EntityFactory.GenerateTargetAttributeName(EntityFactory.Extension.Name, EntityFactory.Group.Movement, EntityFactory.Attribute.Movement.Impassible);
 
     private static HashSet<Vector2Int> _visibleTiles;
 

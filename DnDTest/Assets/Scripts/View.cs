@@ -10,7 +10,7 @@ public static class View {
         List<Vector2Int> visibleTiles = new List<Vector2Int>();
         int sliceCount = 8;
 
-        string viewBlockAttribute = EntityFactory.GenerateTargetAttributeName(EntityFactory.ExtensionName, EntityFactory.GroupVisability, EntityFactory.AttributeVisabilityBlock);
+        string viewBlockAttribute = EntityFactory.GenerateTargetAttributeName(EntityFactory.Extension.Name, EntityFactory.Group.Visability, EntityFactory.Attribute.Visability.Block);
 
         for (int slice = 0; slice < sliceCount; slice++) {
             List<Vector2Int> octant = new List<Vector2Int>();

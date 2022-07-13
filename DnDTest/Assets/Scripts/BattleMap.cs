@@ -73,23 +73,24 @@ public class BattleMap {
         }
     }
 
-    public void MoveEntity(Actor entity, Vector2Int newPosition) {
+    public void MoveEntity(Actor actor, Vector2Int newPosition) {
         if (!PositionInBounds(newPosition)) {
             throw new Exception("Position out of bounds of battleMap");
         }
 
-        RemoveEntity(entity.Position, entity);
-        AddEntity(newPosition, entity);
-        entity.Position = newPosition;
+        Vector2Int currentPosition = ActorUtils.GetPosition(actor);
+
+        RemoveEntity(currentPosition, actor);
+        AddEntity(newPosition, actor);
     }
 
     public bool DoesEntityWithAttributeExistAtPosition(Vector2Int position, string attributeName) {
-        List<Actor> entities = GetEntitiesAt(position);
-        return entities.Exists(entity => entity.GetConditionsWithAttribute(attributeName).Count != 0);
+        List<Actor> actors = GetEntitiesAt(position);
+        return actors.Exists(actor => ActorUtils.GetFeaturesByAttribute(actor, attributeName).Count != 0);
     }
 
     public bool DoesEntityWithSourceExistAtPosition(Vector2Int position, string sourceName) {
-        List<Actor> entities = GetEntitiesAt(position);
-        return entities.Exists(entity => entity.GetConditionsWithSource(sourceName).Count != 0);
+        List<Actor> actors = GetEntitiesAt(position);
+        return actors.Exists(actor => ActorUtils.GetFeaturesBySource(actor, sourceName).Count != 0);
     }
 }
