@@ -1,0 +1,2 @@
+C:\Users\mclan\Documents\Unity Programs\DndTest\DnDTest\obj\Debug\Assembly-CSharp.csproj.AssemblyReference.cache
+C:\Users\mclan\Documents\Unity Programs\DndTest\DnDTest\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache

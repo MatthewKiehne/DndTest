@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 29d6462bfd047bc49a1e9e50d2894cfa
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - sqarePrefab: {fileID: 774743755636655980, guid: 5b885f5cfc7131042870e22b1a69882f, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

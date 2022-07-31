@@ -1,0 +1,122 @@
+{
+    "positionTemplate": [
+        {
+            "DisplayName": "X",
+            "SourceName": "PostionTemplate",
+            "AttributeName": "Default.Position.X",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": null,
+            "Operation": "Add"
+        },
+        {
+            "DisplayName": "Y",
+            "SourceName": "PostionTemplate",
+            "AttributeName": "Default.Position.Y",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": null,
+            "Operation": "Add"
+        }
+    ],
+    "displayTemplate": [
+        {
+            "DisplayName": "Token",
+            "SourceName": "tokenTemplate",
+            "AttributeName": "Default.Visability.Token",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": "Wall",
+            "Operation": "Add"
+        }
+    ],
+    "structureTemplate": [
+        {
+            "DisplayName": "Block Visability",
+            "SourceName": "structureTemplate",
+            "AttributeName": "Default.Visability.Block",
+            "Expiration": null,
+            "NumericValue": 1,
+            "StringValue": null,
+            "Operation": "Add"
+        },
+        {
+            "DisplayName": "Block Movement",
+            "SourceName": "structureTemplate",
+            "AttributeName": "Default.Movement.Impassible",
+            "Expiration": null,
+            "NumericValue": 1,
+            "StringValue": null,
+            "Operation": "Add"
+        }
+    ],
+    "visionTemplate": [
+        {
+            "DisplayName": "Vision Range",
+            "SourceName": "visionTemplate",
+            "AttributeName": "Default.Vision.VisionRange",
+            "Expiration": null,
+            "NumericValue": 20,
+            "StringValue": null,
+            "Operation": "Add"
+        },
+        {
+            "DisplayName": "Dark Vision Range",
+            "SourceName": "visionTemplate",
+            "AttributeName": "Default.Vision.DarkVisionRange",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": null,
+            "Operation": "Add"
+        }
+    ],
+    "movementTemplate": [
+        {
+            "DisplayName": "Movement Range",
+            "SourceName": "movementTemplate",
+            "AttributeName": "Default.Movement.MovementRange",
+            "Expiration": null,
+            "NumericValue": 6,
+            "StringValue": null,
+            "Operation": "Add"
+        }
+    ],
+    "creatureTemplate": [
+        {
+            "DisplayName": "Movement Lookup",
+            "SourceName": "creatureTemplate",
+            "AttributeName": "Default.Lookup",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": "movementTemplate",
+            "Operation": "Der"
+        },
+        {
+            "DisplayName": "Position Lookup",
+            "SourceName": "creatureTemplate",
+            "AttributeName": "Default.Lookup",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": "positionTemplate",
+            "Operation": "Der"
+        },
+        {
+            "DisplayName": "Vision Lookup",
+            "SourceName": "creatureTemplate",
+            "AttributeName": "Default.Lookup",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": "visionTemplate",
+            "Operation": "Der"
+        },
+        {
+            "DisplayName": "Display Lookup",
+            "SourceName": "creatureTemplate",
+            "AttributeName": "Default.Lookup",
+            "Expiration": null,
+            "NumericValue": 0,
+            "StringValue": "displayTemplate",
+            "Operation": "Der"
+        }
+    ]
+}
