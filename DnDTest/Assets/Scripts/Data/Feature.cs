@@ -11,7 +11,7 @@ public class Feature
     public string SourceName { get; }
 
     // the name of the attribute to target (Speed, Strength, AC)
-    public string TargetAttributeName { get; }
+    public string Attribute { get; }
 
     // When the condition wears off, if ever (longRest, shortRest, Round, Turn)
     public string Expiration { get; set; }
@@ -20,13 +20,14 @@ public class Feature
     public int NumericValue { get; set; }
 
     // The operation that gets applied to the numeric value
-    public MathOperation Operation { get; set; }
+    public FeatureOperation Operation { get; set; }
 
     public string StringValue { get; set; }
 
     public Feature(string displayName, string sourceName, string targetAttributeName) {
         this.DisplayName = displayName;
         this.SourceName = sourceName;
-        this.TargetAttributeName = targetAttributeName;
+        this.Attribute = targetAttributeName;
+        Operation = FeatureOperation.Add;
     }
 }

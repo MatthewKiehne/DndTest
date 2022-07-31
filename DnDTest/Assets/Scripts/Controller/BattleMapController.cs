@@ -15,8 +15,8 @@ public class BattleMapController : MonoBehaviour {
     private Vector2Int bounds = new Vector2Int(100, 100);
     private BattleMap battleMap;
 
-    private int viewRange = 15;
-    private int moveRange = 5;
+    //private int viewRange = 20;
+    // private int moveRange = 6;
     private Actor playerEntity;
 
     Dictionary<Actor, HashSet<Vector2Int>> playerViews = new Dictionary<Actor, HashSet<Vector2Int>>();
@@ -44,35 +44,16 @@ public class BattleMapController : MonoBehaviour {
 
         Debug.Log(result);
 
-        // position template and add to look up
-        Actor positionTemplate = new Actor();
-        Feature positionX = new Feature("X",
-            EntityFactory.GenerateSourceName(EntityFactory.Extension.Name, EntityFactory.Group.Postion, EntityFactory.Source.Intrinsic),
-            EntityFactory.GenerateTargetAttributeName(EntityFactory.Extension.Name, EntityFactory.Group.Postion, EntityFactory.Attribute.Position.X));
-        positionX.NumericValue = 0;
+        Saver saver = new Saver();
+        saver.LoadInTemplates();
 
-        Feature positionY = new Feature("Y",
-            EntityFactory.GenerateSourceName(EntityFactory.Extension.Name, EntityFactory.Group.Postion, EntityFactory.Source.Intrinsic),
-            EntityFactory.GenerateTargetAttributeName(EntityFactory.Extension.Name, EntityFactory.Group.Postion, EntityFactory.Attribute.Position.Y));
-        positionY.NumericValue = 0;
-
-        positionTemplate.Features.Add(positionX);
-        positionTemplate.Features.Add(positionY);
-        ActorLookup.AddActor("positionTemplate", positionTemplate);
-
-        // create a wall entity
-
-
-        // create player template and add it to the lookup
-        Actor playerTemplate = new Actor();
-        ActorLookup.AddFeaturesToActor(playerTemplate, "positionTemplate");
-        ActorLookup.AddActor("playerTemplate", playerTemplate);
-
-        // create player from lookup table
+        // create player from lookup tableX
+        this.playerEntity = ActorStorage.CreateActorPointingAtLookup("creatureTemplate");
+        ActorStorage.AddFeaturesToActor(playerEntity, "positionTemplate");
+        // ActorStorage.AddFeaturesToActor(playerEntity, "movementTemplate");
         Vector2Int playerPosition = new Vector2Int(47, 47);
-        this.playerEntity = ActorLookup.Clone("playerTemplate");
-        ActorUtils.SetPosition(playerEntity, playerPosition);
-
+        playerEntity.SetPosition(playerPosition);
+        playerViews.Add(playerEntity, new HashSet<Vector2Int>());
 
         battleMap = new BattleMap(bounds);
 
@@ -88,13 +69,15 @@ public class BattleMapController : MonoBehaviour {
         };
 
         foreach (Vector2Int wallPosition in walls) {
-            Actor wall = EntityFactory.GenerateWall(wallPosition);
+            Actor wall = GenerateWall(wallPosition);
             battleMap.AddEntity(wallPosition, wall);
         }
 
-        playerViews.Add(playerEntity, new HashSet<Vector2Int>());
+        int movementRangeValue = playerEntity.CalculateNumbericValueOfAttribute(Names.CreateAttributeName(Names.Group.Movement, Names.Attribute.Movement.MovementRange));
 
-        Dictionary<Vector2Int, int> moveArea = AvailableMoves.GetAvailableMoves(battleMap, playerPosition, moveRange * 2);
+        Debug.Log(movementRangeValue);
+
+        Dictionary<Vector2Int, int> moveArea = AvailableMoves.GetAvailableMoves(battleMap, playerPosition, movementRangeValue * 2);
         playerMoveRange.Add(playerEntity, moveArea);
 
         UpdateView(playerEntity, playerPosition);
@@ -102,7 +85,7 @@ public class BattleMapController : MonoBehaviour {
         gridManager.colorAllRenders(Color.black);
         gridManager.paintSquareColor(new List<Vector2Int>(playerViews[playerEntity]), Color.green);
         foreach (KeyValuePair<Vector2Int, int> thing in moveArea) {
-            Color c = new Color(0, 0, (1f / moveRange) * thing.Value);
+            Color c = new Color(0, 0, (1f / movementRangeValue) * thing.Value);
             gridManager.paintSquareColor(new List<Vector2Int>() { thing.Key }, c);
         }
 
@@ -126,7 +109,7 @@ public class BattleMapController : MonoBehaviour {
 
         if (roundedCameraPosition != lastMousePostion && playerMoveRange[playerEntity].ContainsKey(roundedCameraPosition) && battleMap.PositionInBounds(roundedCameraPosition)) {
 
-            Vector2Int playerPos = ActorUtils.GetPosition(playerEntity);
+            Vector2Int playerPos = playerEntity.GetPosition();
             playerPath = AStar.getPath(battleMap, playerPos, roundedCameraPosition, 1, playerViews[playerEntity]);
             if (playerPath != null) {
                 foreach (GameObject go in pathGameObjects) {
@@ -135,7 +118,7 @@ public class BattleMapController : MonoBehaviour {
                 pathGameObjects.Clear();
 
                 foreach (Vector2Int step in playerPath) {
-                    GameObject go = GameObject.Instantiate(squarePrefab);
+                    GameObject go = Instantiate(squarePrefab);
                     go.transform.position = (Vector2)step;
                     go.GetComponent<SpriteRenderer>().sortingOrder = 10;
                     pathGameObjects.Add(go);
@@ -148,19 +131,21 @@ public class BattleMapController : MonoBehaviour {
         Vector2Int updatePositon = Vector2Int.zero;
         if (Input.GetKeyDown(KeyCode.Mouse0) && playerViews[playerEntity].Contains(roundedCameraPosition) && battleMap.PositionInBounds(roundedCameraPosition)) {
 
+            int movementRangeValue = playerEntity.CalculateNumbericValueOfAttribute(Names.CreateAttributeName(Names.Group.Movement, Names.Attribute.Movement.MovementRange));
+
             Vector2Int newPlayerPosition = roundedCameraPosition;
-            ActorUtils.SetPosition(playerEntity, newPlayerPosition);
+            playerEntity.SetPosition(newPlayerPosition);
             UpdateView(playerEntity, newPlayerPosition);
             gridManager.colorAllRenders(Color.black);
             playerMoveRange[playerEntity].Clear();
-            playerMoveRange[playerEntity] = AvailableMoves.GetAvailableMoves(battleMap, newPlayerPosition, moveRange * 2);
+            playerMoveRange[playerEntity] = AvailableMoves.GetAvailableMoves(battleMap, newPlayerPosition, movementRangeValue * 2);
 
             gridManager.colorAllRenders(Color.black);
             gridManager.paintSquareColor(new List<Vector2Int>(playerViews[playerEntity]), Color.cyan);
             foreach (KeyValuePair<Vector2Int, int> moveTile in playerMoveRange[playerEntity]) {
                 if (playerViews[playerEntity].Contains(moveTile.Key)) {
                     Color paintColor = Color.green;
-                    if (moveTile.Value > moveRange) {
+                    if (moveTile.Value > movementRangeValue) {
                         paintColor = Color.yellow;
                     }
                     gridManager.paintSquareColor(new List<Vector2Int>() { moveTile.Key }, paintColor);
@@ -170,7 +155,7 @@ public class BattleMapController : MonoBehaviour {
     }
 
     private void UpdateView(Actor entityViewing, Vector2Int position) {
-
+        int viewRange = entityViewing.CalculateNumbericValueOfAttribute(Names.CreateAttributeName(Names.Group.Vision, Names.Attribute.Vision.VisionRange));
         List<Vector2Int> inView = View.GetTilesInView(position, viewRange, battleMap);
         HashSet<Vector2Int> mapInView = new HashSet<Vector2Int>(inView);
 
@@ -206,14 +191,14 @@ public class BattleMapController : MonoBehaviour {
     }
 
     private void DisplayEntityOnTile(Vector2Int tile) {
-        string tokenAttribute = EntityFactory.GenerateTargetAttributeName(EntityFactory.Extension.Name, EntityFactory.Group.Visability, EntityFactory.Attribute.Visability.Token);
+        string tokenAttribute = Names.CreateAttributeName(Names.Group.Visability, Names.Attribute.Visability.Token);
 
         // adds the entity token;
         if (battleMap.DoesEntityWithAttributeExistAtPosition(tile, tokenAttribute)) {
 
-            foreach (Actor entity in battleMap.GetEntitiesAt(tile)) {
+            foreach (Actor actor in battleMap.GetEntitiesAt(tile)) {
 
-                List<Feature> tokenAttributes = ActorUtils.GetFeaturesByAttribute(entity, tokenAttribute);
+                List<Feature> tokenAttributes = actor.GetFeaturesByAttribute(tokenAttribute);
 
                 if (tokenAttributes.Count != 0) {
 
@@ -228,6 +213,15 @@ public class BattleMapController : MonoBehaviour {
                     entityVisuals.Add(tile, sr);
                 }
             }
+        }
+    }
+
+    private Actor GenerateWall(Vector2Int position) {
+        {
+            Actor wall = ActorStorage.CloneFromLookup("structureTemplate");
+            ActorStorage.AddFeaturesToActor(wall, "positionTemplate");
+            wall.SetPosition(position);
+            return wall;
         }
     }
 }
